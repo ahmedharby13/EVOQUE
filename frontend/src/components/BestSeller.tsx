@@ -17,21 +17,26 @@ const BestSeller: React.FC = () => {
       <div className="py-8 text-center text-3xl">
         <Title text1="BEST" text2="SELLERS" />
         <p className="w-3/4 m-auto text-xs sm:text-sm md:text-base text-gray-600">
-          "Discover our best-selling pieces—loved by many, designed for you. Elevate your style with fashion that never goes out of trend!"
+          Discover our best-selling pieces—loved by many, designed for you. Elevate your style with fashion that never goes out of trend!
         </p>
       </div>
-      
-        {/* Best seller products */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-4 gap-y-6">
-        {bestSeller.map((item) => (
-          <ProductItem
-            key={item._id}
-            id={item._id}
-            name={item.name}
-            images={item.images}
-            price={item.price}
-          />
-        ))}
+        {bestSeller.length === 0 ? (
+          <p className="text-center text-gray-500 col-span-full">No best sellers found.</p>
+        ) : (
+          bestSeller.map((item) => (
+            <ProductItem
+              key={item._id}
+              id={item._id}
+              name={item.name}
+              images={item.images}
+              price={item.price}
+              averageRating={item.averageRating}
+              ratings={item.ratings}
+              stock={item.stock}
+            />
+          ))
+        )}
       </div>
     </div>
   );

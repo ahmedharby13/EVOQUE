@@ -14,6 +14,7 @@ interface FormData {
   state: string;
   zipcode: string;
   country: string;
+  phoneNumber: string;
 }
 
 interface OrderItem {
@@ -46,6 +47,7 @@ const PlaceOrder: React.FC = () => {
     state: '',
     zipcode: '',
     country: '',
+    phoneNumber: '',
   });
   const [cookies] = useCookies(['accessToken', 'refreshToken', 'userId']);
 
@@ -98,13 +100,17 @@ const PlaceOrder: React.FC = () => {
   };
 
   const validateForm = (): boolean => {
-    const { street, city, state, zipcode, country } = formData;
-    if (!street.trim() || !city.trim() || !state.trim() || !zipcode.trim() || !country.trim()) {
+    const { street, city, state, zipcode, country, phoneNumber } = formData;
+    if (!street.trim() || !city.trim() || !state.trim() || !zipcode.trim() || !country.trim() || !phoneNumber.trim()) {
       toast.error('All fields are required');
       return false;
     }
     if (!/^\d{5}$/.test(zipcode)) {
       toast.error('Zipcode must be a 5-digit number');
+      return false;
+    }
+    if (!/^\+?[1-9]\d{1,14}$/.test(phoneNumber)) {
+      toast.error('Phone number must be a valid international format (e.g., +1234567890)');
       return false;
     }
     return true;
@@ -172,6 +178,7 @@ const PlaceOrder: React.FC = () => {
           state: formData.state,
           zip: formData.zipcode,
           country: formData.country,
+          phoneNumber: formData.phoneNumber,
         },
         items,
         amount: getCartAmount() + delivery_fee,
@@ -282,6 +289,17 @@ const PlaceOrder: React.FC = () => {
             aria-label="Country"
           />
         </div>
+        <input
+          type="tel"
+          placeholder="Phone Number (e.g., +1234567890)"
+          className="border border-gray-300 rounded py-1.5 px-3.5 w-full"
+          name="phoneNumber"
+          value={formData.phoneNumber}
+          onChange={onChangeHandler}
+          required
+          pattern="\+?[1-9]\d{1,14}"
+          aria-label="Phone number"
+        />
       </div>
       <div className="mt-8">
         <div className="mt-8 min-w-80">

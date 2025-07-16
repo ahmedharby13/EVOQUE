@@ -75,28 +75,28 @@ const Collection: React.FC = () => {
         sortedProducts = sortedProducts.sort((a, b) => {
           const aRating = a.averageRating || 0;
           const bRating = b.averageRating || 0;
-          return bRating - aRating || b.date - a.date; // Stable sort: use date as tiebreaker
+          return bRating - aRating || b.date - a.date;
         });
         break;
       case 'low-high':
         sortedProducts = sortedProducts.sort((a, b) => {
           const aPrice = a.price || 0;
           const bPrice = b.price || 0;
-          return aPrice - bPrice || b.date - a.date; // Stable sort: use date as tiebreaker
+          return aPrice - bPrice || b.date - a.date;
         });
         break;
       case 'high-low':
         sortedProducts = sortedProducts.sort((a, b) => {
-          const aPrice = a.price || 0;
-          const bPrice = b.price || 0;
-          return bPrice - aPrice || b.date - a.date; // Stable sort: use date as tiebreaker
+          const aPrice = b.price || 0;
+          const bPrice = a.price || 0;
+          return aPrice - bPrice || b.date - a.date;
         });
         break;
       case 'newest':
         sortedProducts = sortedProducts.sort((a, b) => {
           const aDate = a.date || 0;
           const bDate = b.date || 0;
-          return bDate - aDate || (a.name || '').localeCompare(b.name || ''); // Stable sort: use name as tiebreaker
+          return bDate - aDate || (a.name || '').localeCompare(b.name || '');
         });
         break;
       default:
@@ -203,6 +203,9 @@ const Collection: React.FC = () => {
                 images={item.images}
                 name={item.name}
                 price={item.price}
+                averageRating={item.averageRating}
+                ratings={item.ratings}
+                stock={item.stock}
               />
             ))}
           </div>

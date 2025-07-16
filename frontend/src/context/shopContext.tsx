@@ -29,7 +29,7 @@ type ShopContextType = {
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   mergeCart: () => Promise<void>;
-  fetchCsrfToken: () => Promise<void>;
+  fetchCsrfToken: () => Promise<string | null>;
 };
 
 export interface Product {

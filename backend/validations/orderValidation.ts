@@ -14,6 +14,11 @@ export const placeOrderValidation: ValidationChain[] = [
   body('address.state').notEmpty().withMessage('State is required'),
   body('address.zip').notEmpty().withMessage('Zip code is required'),
   body('address.country').notEmpty().withMessage('Country is required'),
+  body('address.phoneNumber')
+    .notEmpty()
+    .withMessage('Phone number is required')
+    .matches(/^\+?[1-9]\d{1,14}$/)
+    .withMessage('Phone number must be a valid international format (e.g., +1234567890)'),
 ];
 
 export const verifyStripeValidation: ValidationChain[] = [

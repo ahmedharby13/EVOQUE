@@ -14,7 +14,7 @@ interface CartData {
   };
 }
 
-const currency = 'egp';
+const currency = 'EGP';
 const deliveryCharges = 50;
 
 interface OrderItem {

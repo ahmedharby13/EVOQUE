@@ -3,7 +3,7 @@ import { shopContext } from '../context/shopContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useCookies } from 'react-cookie';
-import { Link } from 'react-router-dom'; // Added for routing
+import { Link } from 'react-router-dom';
 import Title from '../components/Title';
 
 interface OrderItem {
@@ -26,6 +26,7 @@ interface Order {
     state: string;
     zip: string;
     country: string;
+    phoneNumber: string;
     _id: string;
   };
   paymentMethod: 'COD' | 'Stripe';
@@ -55,56 +56,56 @@ const Orders: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
 
-const fetchUserOrders = async (page: number) => {
-  setLoading(true);
-  try {
-    if (!isAuthenticated || !token) {
-      toast.error('Please login to view orders');
-      return;
-    }
-
-    const userId = cookies.userId;
-    if (!userId) {
-      toast.error('User ID not found');
-      return;
-    }
-
-    let currentCsrfToken = csrfToken;
-    if (!currentCsrfToken) {
-      const fetchedToken = await fetchCsrfToken();
-      currentCsrfToken = fetchedToken ?? null;
-      if (!currentCsrfToken) {
-        toast.error('Failed to fetch CSRF token');
+  const fetchUserOrders = async (page: number) => {
+    setLoading(true);
+    try {
+      if (!isAuthenticated || !token) {
+        toast.error('Please login to view orders');
         return;
       }
-    }
 
-    const response = await axios.post(
-      `${backendUrl}/api/order/userorders`,
-      { userId },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'X-CSRF-Token': currentCsrfToken,
-        },
-        params: { page, limit: pagination.ordersPerPage },
-        withCredentials: true,
+      const userId = cookies.userId;
+      if (!userId) {
+        toast.error('User ID not found');
+        return;
       }
-    );
 
-    if (response.data.success) {
-      setOrders(response.data.orders);
-      setPagination(response.data.pagination);
-    } else {
-      toast.error(response.data.message || 'Failed to fetch orders');
+      let currentCsrfToken = csrfToken;
+      if (!currentCsrfToken) {
+        const fetchedToken = await fetchCsrfToken();
+        currentCsrfToken = fetchedToken ?? null;
+        if (!currentCsrfToken) {
+          toast.error('Failed to fetch CSRF token');
+          return;
+        }
+      }
+
+      const response = await axios.post(
+        `${backendUrl}/api/order/userorders`,
+        { userId },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'X-CSRF-Token': currentCsrfToken,
+          },
+          params: { page, limit: pagination.ordersPerPage },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success) {
+        setOrders(response.data.orders);
+        setPagination(response.data.pagination);
+      } else {
+        toast.error(response.data.message || 'Failed to fetch orders');
+      }
+    } catch (error: any) {
+      console.error('Error fetching orders:', error);
+      toast.error('An error occurred while fetching orders');
+    } finally {
+      setLoading(false);
     }
-  } catch (error: any) {
-    console.error('Error fetching orders:', error);
-    toast.error('An error occurred while fetching orders');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     if (isAuthenticated && token && cookies.userId) {
@@ -165,57 +166,57 @@ const fetchUserOrders = async (page: number) => {
                 className="py-6 border-t border-b text-gray-700 bg-white shadow-sm rounded-lg flex flex-col md:flex-row md:items-start md:justify-between gap-6 p-6"
               >
                 <div className="flex flex-col gap-4 w-full md:w-2/3">
-{order.items.map((item) => (
-  // Check if productId exists before rendering
-  item.productId ? (
-    <div key={item._id} className="flex items-start gap-6">
-      <Link to={`/product/${item.productId._id}`} className="hover:opacity-80">
-        <img
-          src={item.productId.images[0] || 'https://via.placeholder.com/100'}
-          alt={item.name}
-          className="w-24 h-24 object-cover rounded-md"
-          onError={(e) => {
-            e.currentTarget.src = 'https://via.placeholder.com/100';
-          }}
-        />
-      </Link>
-      <div>
-        <Link to={`/product/${item.productId._id}`} className="hover:underline">
-          <p className="text-lg font-medium text-gray-800">{item.name}</p>
-        </Link>
-        <div className="flex items-center gap-4 mt-2 text-base text-gray-700">
-          <p>
-            {item.quantity} x ${item.price}
-          </p>
-          <p>Size: {item.size}</p>
-        </div>
-        <p className="mt-2 text-sm">
-          Date: <span className="text-gray-400">{new Date(order.date).toLocaleDateString()}</span>
-        </p>
-      </div>
-    </div>
-  ) : (
-    <div key={item._id} className="flex items-start gap-6">
-      <img
-        src="https://via.placeholder.com/100"
-        alt="Product Unavailable"
-        className="w-24 h-24 object-cover rounded-md"
-      />
-      <div>
-        <p className="text-lg font-medium text-gray-800">{item.name} (Product Unavailable)</p>
-        <div className="flex items-center gap-4 mt-2 text-base text-gray-700">
-          <p>
-            {item.quantity} x ${item.price}
-          </p>
-          <p>Size: {item.size}</p>
-        </div>
-        <p className="mt-2 text-sm">
-          Date: <span className="text-gray-400">{new Date(order.date).toLocaleDateString()}</span>
-        </p>
-      </div>
-    </div>
-  )
-))}
+                  {order.items.map((item) => (
+                    // Check if productId exists before rendering
+                    item.productId ? (
+                      <div key={item._id} className="flex items-start gap-6">
+                        <Link to={`/product/${item.productId._id}`} className="hover:opacity-80">
+                          <img
+                            src={item.productId.images[0] || 'https://via.placeholder.com/100'}
+                            alt={item.name}
+                            className="w-24 h-24 object-cover rounded-md"
+                            onError={(e) => {
+                              e.currentTarget.src = 'https://via.placeholder.com/100';
+                            }}
+                          />
+                        </Link>
+                        <div>
+                          <Link to={`/product/${item.productId._id}`} className="hover:underline">
+                            <p className="text-lg font-medium text-gray-800">{item.name}</p>
+                          </Link>
+                          <div className="flex items-center gap-4 mt-2 text-base text-gray-700">
+                            <p>
+                              {item.quantity} x ${item.price}
+                            </p>
+                            <p>Size: {item.size}</p>
+                          </div>
+                          <p className="mt-2 text-sm">
+                            Date: <span className="text-gray-400">{new Date(order.date).toLocaleDateString()}</span>
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div key={item._id} className="flex items-start gap-6">
+                        <img
+                          src="https://via.placeholder.com/100"
+                          alt="Product Unavailable"
+                          className="w-24 h-24 object-cover rounded-md"
+                        />
+                        <div>
+                          <p className="text-lg font-medium text-gray-800">{item.name} (Product Unavailable)</p>
+                          <div className="flex items-center gap-4 mt-2 text-base text-gray-700">
+                            <p>
+                              {item.quantity} x ${item.price}
+                            </p>
+                            <p>Size: {item.size}</p>
+                          </div>
+                          <p className="mt-2 text-sm">
+                            Date: <span className="text-gray-400">{new Date(order.date).toLocaleDateString()}</span>
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  ))}
                 </div>
                 <div className="md:w-1/3 flex flex-col gap-2">
                   <p className="text-base font-medium">Status: <span className="text-gray-600">{order.status}</span></p>
@@ -230,7 +231,7 @@ const fetchUserOrders = async (page: number) => {
                   </p>
                   <p className="text-sm text-gray-500">
                     Address: {order.address.street}, {order.address.city}, {order.address.state}, {order.address.zip},{' '}
-                    {order.address.country}
+                    {order.address.country}, Phone: {order.address.phoneNumber}
                   </p>
                 </div>
               </div>

@@ -51,37 +51,49 @@ const Product: React.FC = () => {
   const [reviewLoading, setReviewLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'description' | 'reviews'>('description');
 
-  const fetchProductData = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`${backendUrl}/api/product/${productId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.data.success) {
-        setProductData(response.data.product);
-        setImage(response.data.product.images[0] || '');
-      } else {
-      }
-    } catch (error: any) {
-    } finally {
-      setLoading(false);
+const fetchProductData = async () => {
+  try {
+    setLoading(true);
+    const headers: { Authorization?: string } = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
     }
-  };
+    const response = await axios.get(`${backendUrl}/api/product/${productId}`, {
+      headers,
+    });
+    if (response.data.success) {
+      setProductData(response.data.product);
+      setImage(response.data.product.images[0] || '');
+    } else {
+      toast.error(`Failed to fetch product: ${response.data.message}`);
+    }
+  } catch (error: any) {
+    toast.error(`Error fetching product: ${error.message}`);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const fetchReviews = async () => {
-    try {
-      const response = await axios.get(`${backendUrl}/api/product/${productId}/ratings`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.data.success) {
-        setReviews(response.data.reviews || []);
-      } else {
-        toast.error(`Failed to fetch reviews: ${response.data.message}`);
-      }
-    } catch (error: any) {
-      toast.error(`Error fetching reviews: ${error.message}`);
+const fetchReviews = async () => {
+  try {
+    const headers: { Authorization?: string } = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
     }
-  };
+    const response = await axios.get(`${backendUrl}/api/product/${productId}/ratings`, {
+      headers,
+    });
+    if (response.data.success) {
+      setReviews(response.data.reviews || []);
+    } else {
+      toast.error(`Failed to fetch reviews: ${response.data.message}`);
+      setReviews([]);
+    }
+  } catch (error: any) {
+    toast.error(`Error fetching reviews: ${error.message}`);
+    setReviews([]);
+  }
+};
 
   const checkCanReview = async () => {
     const userId = cookies.userId;
@@ -93,15 +105,16 @@ const Product: React.FC = () => {
     }
     try {
       let currentCsrfToken = csrfToken;
-      if (!currentCsrfToken) {
-        currentCsrfToken = await fetchCsrfToken();
-        if (!currentCsrfToken) {
-          toast.error('Failed to fetch CSRF token');
-          setCanReview(false);
-          setHasReviewed(false);
-          return;
-        }
-      }
+if (!currentCsrfToken) {
+  const fetchedToken = await fetchCsrfToken();
+  if (!fetchedToken) {
+    toast.error('Failed to fetch CSRF token');
+    setCanReview(false);
+    setHasReviewed(false);
+    return;
+  }
+  currentCsrfToken = fetchedToken;
+}
 
       // Check for existing review first
       const reviewResponse = await axios.get(`${backendUrl}/api/product/${productId}/ratings`, {
@@ -167,13 +180,14 @@ const Product: React.FC = () => {
     setReviewLoading(true);
     try {
       let currentCsrfToken = csrfToken;
-      if (!currentCsrfToken) {
-        currentCsrfToken = await fetchCsrfToken();
-        if (!currentCsrfToken) {
-          toast.error('Failed to fetch CSRF token');
-          return;
-        }
-      }
+if (!currentCsrfToken) {
+  const fetchedToken = await fetchCsrfToken();
+  if (!fetchedToken) {
+    toast.error('Failed to fetch CSRF token');
+    return;
+  }
+  currentCsrfToken = fetchedToken;
+}
 
       const response = await axios.post(
         `${backendUrl}/api/product/review`,
@@ -227,11 +241,17 @@ const Product: React.FC = () => {
     setReviewForm({ ...reviewForm, rating });
   };
 
-  useEffect(() => {
+useEffect(() => {
+  const fetchData = async () => {
+    await Promise.all([fetchProductData(), fetchReviews()]);
     if (productId && token && cookies.userId && csrfToken) {
-      Promise.all([fetchProductData(), fetchReviews(), checkCanReview()]);
+      await checkCanReview();
     }
-  }, [productId, token, cookies.userId, csrfToken]);
+  };
+  if (productId) {
+    fetchData();
+  }
+}, [productId, token, cookies.userId, csrfToken]);
 
   const handleAddToCart = () => {
     if (!size) {

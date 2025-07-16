@@ -16,6 +16,7 @@ export interface Order extends Document {
     state: string;
     zip: string;
     country: string;
+    phoneNumber: string;
   };
   paymentMethod: "COD" | "Stripe";
   payment: boolean;
@@ -53,6 +54,11 @@ const orderSchema: Schema<Order> = new mongoose.Schema(
         state: { type: String, required: true },
         zip: { type: String, required: true },
         country: { type: String, required: true },
+        phoneNumber: { 
+          type: String, 
+          required: true,
+          match: [/^\+?[1-9]\d{1,14}$/, "Phone number must be a valid international format (e.g., +1234567890)"]
+        },
       },
       required: true,
     },
