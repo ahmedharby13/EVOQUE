@@ -21,7 +21,7 @@ export const sendVerificationEmail = async (
     const baseUrl = process.env.APP_URL; // IN .ENV
     const link =
       type === 'verify-email'
-       ? `http://localhost:3000/verify-email?token=${token}`
+       ? `http://localhost:3000/api/auth/verify-email?token=${token}`
         // ? `${baseUrl}/verify-email?token=${token}`
         : `${baseUrl}/reset-password?token=${token}`;
 
